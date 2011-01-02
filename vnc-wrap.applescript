@@ -9,7 +9,7 @@ set target_host to the text returned of the result
 -- might as well be sure. can't think of a good reason for a hostname to
 -- need to have any other characters in it.
 do shell script "echo " & quoted form of target_host & Â
-	" | grep -ivq '[^-a-z0-9_.]'"
+	" | grep -ivq '[^-a-z0-9_.@]'"
 
 -- store all the hostnames we've connected to, and the forward-ports we
 -- ended up using for them. using the same forward-port each time allows
