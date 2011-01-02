@@ -37,7 +37,7 @@ More detailed info
   you can either configure SSH always to use the right username when
   connecting to the other machine (see `ssh_config(5)`_) or give your username
   along with the hostname when vnc-wrap prompts. Example:
-  "othername@some.host".
+  "``othername@some.host``".
 
 * The first time you connect somewhere, vnc-wrap might ask for your ssh
   password. It will store it in the OS X Keychain so that it won't have to ask
