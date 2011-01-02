@@ -37,20 +37,33 @@ set forward_port to the result
 -- to a tempfile. The child ssh process will exit after 15 seconds if no
 -- tunneled connections are made, or if they are made, after all tunneled
 -- connections finish.
-try
-	set sshout to quoted form of (POSIX path of (path to temporary items) & Â
-		"sshout")
-	do shell script "/usr/bin/ssh -L localhost:" & quoted form of forward_port & Â
-		":localhost:" & vnc_port & Â
-		" -o ExitOnForwardFailure=yes -n -f " & quoted form of target_host & Â
-		" 'echo OK; sleep 15' > /dev/null 2>" & sshout
-on error errormsg number errornum
-	do shell script "cat " & sshout
-	set errorout to result
-	do shell script "rm -f " & sshout
-	display dialog ("SSH failure [" & errornum as text) & "] " & errorout
-	error errornum
-end try
+set reset to ""
+repeat 3 times
+	try
+		set sshout to quoted form of (POSIX path of (path to temporary items) & Â
+			"sshout")
+		set askpass to POSIX path of (path to resource "askpass.sh")
+		do shell script "SSHVNC_DEST=" & quoted form of target_host & Â
+			" SSHVNC_RESET=" & quoted form of reset & Â
+			" SSH_ASKPASS=" & quoted form of askpass & Â
+			" /usr/bin/ssh -L localhost:" & quoted form of forward_port & Â
+			":localhost:" & vnc_port & Â
+			" -o ExitOnForwardFailure=yes -n -f " & quoted form of target_host & Â
+			" 'sleep 15' > /dev/null 2>" & sshout
+		exit repeat
+	on error errormsg number errornum
+		do shell script "cat " & sshout
+		set errorout to result
+		set isauthfail to offset of Â
+			"Too many authentication failures for" in errorout
+		if errornum ­ 255 or isauthfail < 1 then
+			do shell script "rm -f " & sshout
+			display dialog ("SSH failure [" & errornum as text) & "] " & errorout
+			error errornum
+		end if
+	end try
+	set reset to "YES"
+end repeat
 
 do shell script "rm -f " & sshout
 open location "vnc://localhost:" & forward_port & "/"
